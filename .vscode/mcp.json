@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "workiq": {
+      "command": "C:\\.tools\\.npm-global\\workiq.cmd",
+      "type": "stdio",
+      "args": [
+        "mcp",
+        "--account",
+        "YOUR_EMAIL@microsoft.com"
+      ]
+    }
+  }
+}

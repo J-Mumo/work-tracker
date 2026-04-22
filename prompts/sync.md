@@ -31,10 +31,18 @@ You will receive:
 {
   "id": "ws-NNN",
   "title": "Short descriptive title",
-  "status": "active | cooling | dormant",
+  "status": "active | cooling | dormant | archived",
   "created": "YYYY-MM-DD",
   "last_updated": "YYYY-MM-DD",
   "keywords": ["keyword1", "keyword2"],
+  "impact": {
+    "type": "direct | leveraged | organizational",
+    "metric": "What measurable outcome changed (or null if not yet known)",
+    "before": "State before your work (optional)",
+    "after": "State after your work (optional)",
+    "scope": "Who benefited -- team, customers, org",
+    "connect_summary": "One sentence: Delivered X, which resulted in Y for Z."
+  },
   "evidence": [
     {
       "type": "meeting | pull_request | work_item | commit | chat | email",
@@ -45,6 +53,13 @@ You will receive:
   ]
 }
 ```
+
+### Impact field rules
+
+- The `impact` field is optional. It can be null or omitted for workstreams where impact is not yet clear.
+- When syncing, do NOT overwrite an existing `impact` field unless the user explicitly asks to update it.
+- When creating new workstreams, set `impact` to null.
+- The `impact` field is primarily updated via the impact prompt (`prompts/impact.md`), not during regular sync.
 
 ## Output
 

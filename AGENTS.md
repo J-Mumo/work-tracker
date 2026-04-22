@@ -46,6 +46,33 @@ If the user asks for a weekly or periodic status update:
 2. Filter to workstreams updated in the relevant period
 3. Produce a concise summary suitable for email or Teams message
 
+## When the user asks about impact or Connects
+
+If the user asks any of:
+- "Draft my Connect impact summary"
+- "What's my impact?"
+- "Prepare for Connects"
+- "Measure my impact"
+- "What impact did I have this half/quarter?"
+
+Then:
+1. Read `workstreams.json`
+2. Follow the instructions in `prompts/impact.md`
+3. If Work IQ MCP is available, fetch additional context about outcomes (ICM trends, team feedback, etc.)
+4. Produce a Connect-ready impact summary
+
+## When the user asks to update impact for a workstream
+
+If the user says something like:
+- "Update the impact for [workstream]"
+- "The config merge PR reduced ICMs by X"
+- "Add impact: [description]"
+
+Then:
+1. Read `workstreams.json`
+2. Update the `impact` field for the specified workstream
+3. Write back to `workstreams.json`
+
 ## Work IQ MCP
 
 If the Work IQ MCP server is available, use it to enrich responses with live meeting, email, and chat context. Always combine Work IQ signals with the persistent workstream memory in `workstreams.json` -- do not rely on Work IQ alone, as it does not maintain state across sessions.

@@ -32,24 +32,52 @@ Capture evidence of:
 
 For each workstream that was active during the specified period:
 
+### Step 0: Enrich from linked and discovered documents
+
+Before writing any impact statements, gather metrics from related documents:
+
+**A. Pinned documents (from `document_urls` field)**
+If the workstream has `document_urls`, query Work IQ MCP for each URL:
+```
+ask_work_iq(
+  question: "Extract all metrics, ICM counts, customer impact numbers, failure rates, severity, timeline, and outcomes from this document.",
+  fileUrls: [<url>]
+)
+```
+This pulls hard numbers from PIR docs, design docs, and analyses that the user has explicitly linked.
+
+**B. Auto-discovered documents (via Work IQ search)**
+If Work IQ MCP is available and the workstream does NOT have `document_urls` (or you want additional context), query Work IQ to find related documents automatically:
+```
+ask_work_iq(
+  question: "Find any SharePoint or OneDrive documents related to [workstream keywords]. Return document titles and URLs."
+)
+```
+If relevant documents are found, query them for metrics as in step A. Offer to pin the most useful URLs to the workstream's `document_urls` field.
+
+**C. Store extracted metrics**
+Keep the extracted metrics in context for Steps 2-3. These real numbers (ICM counts, customer counts, severity, TTD/TTM, etc.) should replace vague language in impact statements.
+
 ### Step 1: Classify the impact type
 - Is this direct (you shipped it), leveraged (it helped others), or organizational (it shaped direction)?
 - A workstream can have multiple impact types.
 
 ### Step 2: Identify the metric or outcome
-Look at the evidence and infer:
+Look at evidence, linked documents (Step 0), and infer:
 - **Incident reduction**: Did this fix or prevent ICMs? How many? What severity?
 - **Unblocking others**: Who depended on this? Was a deadline met?
 - **Compliance/risk**: Did this close audit items, move KPIs, meet a deadline?
 - **Engineering velocity**: Did this save time, automate something, reduce toil?
 - **Customer impact**: How many customers/tenants were affected?
 
-If the metric is not obvious from evidence, state what you *would* need to confirm it (e.g., "check ICM volume for config-related failures post-merge").
+If the metric is not obvious from evidence or documents, state what you *would* need to confirm it (e.g., "check ICM volume for config-related failures post-merge").
 
 If Work IQ MCP is available, actively query for supporting data:
 - "How many ICMs were filed for [topic] in the last 3 months?"
 - "Were there any customer escalations related to [topic]?"
 - "Did [team/person] mention being unblocked by [workstream] in any meetings?"
+
+**Priority order for metrics**: Pinned document data > auto-discovered document data > Work IQ live queries > evidence snippets > inference.
 
 ### Step 2b: Extract "how you work" evidence
 For each workstream, look for:

@@ -63,10 +63,12 @@ Triggers: "what's my impact?", "draft my Connect impact summary", "prepare for C
 
 1. Read `workstreams.json`
 2. Read `prompts/impact.md` and follow its instructions
-3. If Work IQ MCP is available, query for ICM counts, customer escalations, and team feedback
-4. Produce a Connect-ready impact summary following Microsoft's "Delivered X, resulted in Y for Z" framework
-5. For workstreams with `impact: null`, draft statements and ask the user to confirm
-6. For workstreams with existing impact, check if metrics can be strengthened
+3. For workstreams with `document_urls`, query Work IQ MCP with `fileUrls` to extract real metrics from PIR docs, design docs, and analyses
+4. For workstreams without `document_urls`, query Work IQ to auto-discover related SharePoint/OneDrive documents and extract metrics
+5. If Work IQ MCP is available, also query for ICM counts, customer escalations, and team feedback
+6. Produce a Connect-ready impact summary following Microsoft's "Delivered X, resulted in Y for Z" framework
+7. For workstreams with `impact: null`, draft statements and ask the user to confirm
+8. For workstreams with existing impact, check if metrics can be strengthened with document data
 
 ### Update Impact
 
@@ -75,6 +77,18 @@ Triggers: "update the impact for [workstream]", "add impact: [description]", "th
 1. Read `workstreams.json`
 2. Update the `impact` field for the specified workstream
 3. Write back to `workstreams.json`
+
+### Link Document to Workstream
+
+Triggers: "link this doc to [workstream]", "here's the PIR for [workstream]", "add this document", "extract impact from this doc"
+
+1. Read `workstreams.json`
+2. Add the URL to `document_urls` for the matching workstream
+3. Query Work IQ MCP with `fileUrls` parameter to extract metrics (ICM counts, customer numbers, severity, TTD/TTM, etc.)
+4. Show extracted metrics and offer to update the `impact` field
+5. Write back to `workstreams.json`
+
+If the user doesn't specify a workstream, use document content to match automatically.
 
 ### Stale Work Check
 

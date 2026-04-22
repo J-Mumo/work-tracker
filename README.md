@@ -79,6 +79,7 @@ You ask: "What am I updating on?"
 | `last-sync-input.json` | Latest ADO sync output (gitignored) |
 | `prompts/sync.md` | Prompt template for updating workstreams |
 | `prompts/query.md` | Prompt template for "what am I updating on?" |
+| `prompts/impact.md` | Prompt template for Connect-ready impact summaries |
 | `scripts/sync-ado.ps1` | Collects PRs, work items, commits |
 | `.vscode/mcp.json` | VS Code MCP server config for Work IQ |
 
@@ -100,6 +101,22 @@ You ask: "What am I updating on?"
 ```
 "Draft a weekly status update based on my workstreams"
 ```
+
+### Prepare for Connects
+```
+"Draft my Connect impact summary"
+```
+The agent will query linked documents (PIRs, design docs) and auto-discover related
+SharePoint/OneDrive files via Work IQ to extract real metrics for impact statements.
+
+### Link a document to a workstream
+```
+"Link this doc to config merge: https://sharepoint.com/..."
+"Extract impact from this doc: https://sharepoint.com/..."
+```
+Work IQ reads the document and extracts ICM counts, customer impact numbers,
+and other metrics. You can also skip linking -- the agent will auto-discover
+related documents when generating impact.
 
 ### Check stale work
 ```

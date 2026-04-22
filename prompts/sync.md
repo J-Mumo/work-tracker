@@ -35,6 +35,7 @@ You will receive:
   "created": "YYYY-MM-DD",
   "last_updated": "YYYY-MM-DD",
   "keywords": ["keyword1", "keyword2"],
+  "document_urls": ["https://sharepoint.com/..."],
   "impact": {
     "type": "direct | leveraged | organizational",
     "metric": "What measurable outcome changed (or null if not yet known)",
@@ -60,6 +61,13 @@ You will receive:
 - When syncing, do NOT overwrite an existing `impact` field unless the user explicitly asks to update it.
 - When creating new workstreams, set `impact` to null.
 - The `impact` field is primarily updated via the impact prompt (`prompts/impact.md`), not during regular sync.
+
+### Document URLs field rules
+
+- The `document_urls` field is an optional array of SharePoint/OneDrive URLs linked to the workstream.
+- These are user-curated. Do NOT overwrite or remove existing URLs during sync.
+- When creating new workstreams, omit `document_urls` or set to `[]`.
+- URLs are used by the impact prompt to fetch real metrics from PIR docs, design docs, and analyses via Work IQ MCP.
 
 ## Output
 

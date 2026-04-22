@@ -73,6 +73,24 @@ Then:
 2. Update the `impact` field for the specified workstream
 3. Write back to `workstreams.json`
 
+## When the user links a document to a workstream
+
+If the user says something like:
+- "Link this doc to [workstream]: [URL]"
+- "Here's the PIR for [workstream]: [URL]"
+- "Add this document: [URL]"
+- "Extract impact from this doc: [URL]"
+
+Then:
+1. Read `workstreams.json`
+2. Add the URL to the `document_urls` array for the matching workstream
+3. Query Work IQ MCP with the URL to extract metrics (ICM counts, customer impact, severity, etc.)
+4. Show the extracted metrics to the user
+5. Offer to update the `impact` field with the real numbers
+6. Write back to `workstreams.json`
+
+If the user does not specify a workstream, use the document content and keywords to match to the most likely workstream and confirm with the user.
+
 ## Work IQ MCP
 
 If the Work IQ MCP server is available, use it to enrich responses with live meeting, email, and chat context. Always combine Work IQ signals with the persistent workstream memory in `workstreams.json` -- do not rely on Work IQ alone, as it does not maintain state across sessions.

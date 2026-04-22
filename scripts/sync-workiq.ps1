@@ -49,7 +49,7 @@ for ($i = 0; $i -lt $months; $i++) {
 
     Write-Host "  [$monthLabel]" -ForegroundColor Gray
 
-    $question = "What did I discuss or update on in my meetings during $monthLabel? Focus on my own statements and updates. Include specific topics, action items, and anything I said I was working on. Be concise."
+    $question = "List each distinct work topic I discussed or gave updates on in my meetings during $monthLabel. For each topic, include: the meeting name, what I said I was working on, any blockers I mentioned, and any action items. Format as a numbered list, one topic per line. Only include my own statements, not what others said."
 
     try {
         $response = & $workiqPath ask -q $question 2>$null
@@ -72,7 +72,7 @@ for ($i = 0; $i -lt $months; $i++) {
 # --- Emails ---
 Write-Host "`nFetching email context..." -ForegroundColor Yellow
 try {
-    $emailQuestion = "What were the most important emails I sent or received in the last $months months? Focus on action items, decisions, and work commitments I made. Be concise."
+    $emailQuestion = "List the most important emails I sent or received in the last $months months that contain action items, decisions, or work commitments. For each, state: subject, date, and the key action or decision. Format as a numbered list."
     $emailResponse = & $workiqPath ask -q $emailQuestion 2>$null
     if ($emailResponse) {
         $allSignals += @{
@@ -92,7 +92,7 @@ try {
 # --- Teams Chats ---
 Write-Host "`nFetching Teams chat context..." -ForegroundColor Yellow
 try {
-    $chatQuestion = "What were the most important Teams messages or chats I was involved in over the last $months months? Focus on decisions, action items, and work topics. Be concise."
+    $chatQuestion = "List the most important Teams messages or chats I was involved in over the last $months months. For each, state: the chat/channel name, date, and the key decision or action item. Format as a numbered list."
     $chatResponse = & $workiqPath ask -q $chatQuestion 2>$null
     if ($chatResponse) {
         $allSignals += @{

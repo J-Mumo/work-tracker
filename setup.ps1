@@ -7,6 +7,7 @@ param(
     [string[]]$Repositories,
     [string]$AdoOrg,
     [string[]]$AdoProjects,
+    [hashtable[]]$AdoOrgs,
     [int]$InitialSyncDays = 180
 )
 
@@ -153,85 +154,89 @@ foreach ($r in $repos) {
     Write-Host "    - $($r.name)  $pathDisplay" -ForegroundColor Green
 }
 
-# --- ADO org ---
-if (-not $AdoOrg) {
-    $detectedOrg = $null
-    $firstRepoWithPath = $repos | Where-Object { $_.path } | Select-Object -First 1
-    if ($firstRepoWithPath) {
-        try {
-            $remote = git -C $firstRepoWithPath.path remote get-url origin 2>$null
-            if ($remote -match "https://([^/]+)") {
-                $detectedOrg = "https://$($Matches[1])"
-                if ($remote -match "DefaultCollection") {
-                    $detectedOrg += "/DefaultCollection"
-                }
-            }
-        } catch {}
-    }
+# --- ADO organizations and projects (multiple orgs supported) ---
+$adoOrgsList = @()
 
-    if ($detectedOrg) {
-        $useDetected = Read-Host "Detected ADO org '$detectedOrg'. Use this? (Y/n)"
-        if ($useDetected -eq "" -or $useDetected -match "^[Yy]") {
-            $AdoOrg = $detectedOrg
-        }
-    }
-
-    if (-not $AdoOrg) {
-        $AdoOrg = Read-Host "Enter your ADO organization URL (e.g., https://dev.azure.com/myorg)"
-    }
-}
-Write-Host "  ADO org: $AdoOrg" -ForegroundColor Green
-
-# --- ADO projects (multiple) ---
-$projects = @()
-
-if ($AdoProjects) {
-    $projects = @($AdoProjects)
+if ($AdoOrgs) {
+    $adoOrgsList = @($AdoOrgs)
 } else {
-    # Detect from repo remotes
-    $detectedProjects = @()
+    # Detect org+project pairs from repo remotes
+    $detectedPairs = @{}
     foreach ($r in $repos) {
         if (-not $r.path) { continue }
         try {
             $remote = git -C $r.path remote get-url origin 2>$null
+            $org = $null
             $proj = $null
+
+            if ($remote -match "https://([^/]+)") {
+                $org = "https://$($Matches[1])"
+                if ($remote -match "DefaultCollection") {
+                    $org += "/DefaultCollection"
+                }
+            }
             if ($remote -match "DefaultCollection/([^/]+)/") {
                 $proj = $Matches[1]
             } elseif ($remote -match "dev\.azure\.com/[^/]+/([^/]+)/") {
                 $proj = $Matches[1]
             }
-            if ($proj -and $proj -notin $detectedProjects) {
-                $detectedProjects += $proj
+
+            if ($org -and $proj) {
+                if (-not $detectedPairs.ContainsKey($org)) {
+                    $detectedPairs[$org] = @()
+                }
+                if ($proj -notin $detectedPairs[$org]) {
+                    $detectedPairs[$org] += $proj
+                }
             }
         } catch {}
     }
 
-    foreach ($dp in $detectedProjects) {
-        $useDetected = Read-Host "Detected ADO project '$dp'. Add it? (Y/n)"
+    # Present detected org/project pairs
+    foreach ($org in $detectedPairs.Keys) {
+        $projList = $detectedPairs[$org] -join ", "
+        $useDetected = Read-Host "Detected ADO org '$org' with project(s) [$projList]. Add it? (Y/n)"
         if ($useDetected -eq "" -or $useDetected -match "^[Yy]") {
-            $projects += $dp
+            $adoOrgsList += @{ org = $org; projects = @($detectedPairs[$org]) }
         }
     }
 
-    $addMore = "y"
+    # Ask for additional orgs (e.g., work items in a different org)
+    Write-Host ""
+    Write-Host "  TIP: If your work items live in a different ADO org than your PRs," -ForegroundColor DarkYellow
+    Write-Host "       add that org here (e.g., https://identitydivision.visualstudio.com)." -ForegroundColor DarkYellow
+
+    $addMore = Read-Host "Add another ADO org? (y/N)"
     while ($addMore -match "^[Yy]") {
-        $newProj = Read-Host "Enter another ADO project name (or press Enter to skip)"
-        if ($newProj -eq "") { break }
-        if ($newProj -notin $projects) {
-            $projects += $newProj
+        $newOrg = Read-Host "  ADO org URL (e.g., https://identitydivision.visualstudio.com)"
+        if ($newOrg -eq "") { break }
+        $newProj = Read-Host "  Project name in that org (e.g., Engineering)"
+        $extraProjects = @()
+        if ($newProj -ne "") { $extraProjects += $newProj }
+
+        $addProj = Read-Host "  Add another project in '$newOrg'? (y/N)"
+        while ($addProj -match "^[Yy]") {
+            $anotherProj = Read-Host "    Project name"
+            if ($anotherProj -ne "") { $extraProjects += $anotherProj }
+            $addProj = Read-Host "    Add another? (y/N)"
         }
-        $addMore = Read-Host "Add another project? (y/N)"
+
+        if ($extraProjects.Count -gt 0) {
+            $adoOrgsList += @{ org = $newOrg; projects = @($extraProjects) }
+        }
+        $addMore = Read-Host "Add another ADO org? (y/N)"
     }
 
-    if ($projects.Count -eq 0) {
-        $fallback = Read-Host "No projects detected. Enter at least one ADO project name"
-        $projects += $fallback
+    if ($adoOrgsList.Count -eq 0) {
+        $fallbackOrg = Read-Host "No ADO orgs detected. Enter an org URL"
+        $fallbackProj = Read-Host "  Project name in that org"
+        $adoOrgsList += @{ org = $fallbackOrg; projects = @($fallbackProj) }
     }
 }
 
-Write-Host "  ADO projects ($($projects.Count)):" -ForegroundColor Green
-foreach ($p in $projects) {
-    Write-Host "    - $p" -ForegroundColor Green
+Write-Host "  ADO organizations ($($adoOrgsList.Count)):" -ForegroundColor Green
+foreach ($entry in $adoOrgsList) {
+    Write-Host "    - $($entry.org)  [$($entry.projects -join ', ')]" -ForegroundColor Green
 }
 
 # --- Detect workiq ---
@@ -264,8 +269,7 @@ $config = @{
     git_author        = $gitAuthor
     repos_folder      = $ReposFolder
     repositories      = @($repos | ForEach-Object { @{ name = $_.name; path = $_.path } })
-    ado_org           = $AdoOrg
-    ado_projects      = @($projects)
+    ado_orgs          = @($adoOrgsList | ForEach-Object { @{ org = $_.org; projects = @($_.projects) } })
     initial_sync_days = $InitialSyncDays
     workiq_path       = $workiqPath
 }
@@ -273,10 +277,11 @@ $config = @{
 $config | ConvertTo-Json -Depth 4 | Set-Content -Path $configFile -Encoding UTF8
 Write-Host "`nConfig written to: $configFile" -ForegroundColor Green
 
-# --- Configure ADO defaults (use first project) ---
+# --- Configure ADO defaults (use first org/project) ---
 Write-Host "`nConfiguring ADO CLI defaults..." -ForegroundColor Yellow
-az devops configure --defaults "organization=$AdoOrg" "project=$($projects[0])" 2>$null
-Write-Host "  Done (default project: $($projects[0]))" -ForegroundColor Green
+$firstOrg = $adoOrgsList[0]
+az devops configure --defaults "organization=$($firstOrg.org)" "project=$($firstOrg.projects[0])" 2>$null
+Write-Host "  Done (default: $($firstOrg.org) / $($firstOrg.projects[0]))" -ForegroundColor Green
 
 # --- Initialize workstreams.json if empty ---
 $wsFile = Join-Path $PSScriptRoot "workstreams.json"
@@ -343,7 +348,9 @@ Write-Host ""
 Write-Host "Config summary:" -ForegroundColor White
 Write-Host "  User:         $userEmail" -ForegroundColor White
 Write-Host "  Repositories: $($repos.Count)" -ForegroundColor White
-Write-Host "  ADO projects: $($projects -join ', ')" -ForegroundColor White
+foreach ($entry in $adoOrgsList) {
+    Write-Host "  ADO org:      $($entry.org) [$($entry.projects -join ', ')]" -ForegroundColor White
+}
 Write-Host "  Initial data: $InitialSyncDays days" -ForegroundColor White
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor White

@@ -41,171 +41,57 @@ if ($workiqPath -and (Test-Path $workiqPath)) {
 }
 
 # --- Step 3: Merge into workstreams.json (chunked) ---
-Write-Host "`nStep 3/3: Merging signals into workstreams..." -ForegroundColor Yellow
+Write-Host "`nStep 3/3: Preparing merge..." -ForegroundColor Yellow
 
-# Backup current workstreams before any changes
+# Backup current workstreams
 $backupFile = Join-Path $root "workstreams.backup.json"
 Copy-Item $wsFile $backupFile -Force -ErrorAction SilentlyContinue
 
-$currentWorkstreams = Get-Content $wsFile -Raw -ErrorAction SilentlyContinue
-if (-not $currentWorkstreams) {
-    $currentWorkstreams = "{`"owner`": `"$($config.user_email)`", `"last_synced`": null, `"workstreams`": []}"
-}
-
-$syncRules = Get-Content $syncPromptFile -Raw
-$today = Get-Date -Format 'yyyy-MM-dd'
-$mergeSteps = @()
-
-# Build merge batches from ADO signals
-if (Test-Path $adoInput) {
-    $adoData = Get-Content $adoInput -Raw | ConvertFrom-Json
-    $prSignals = @($adoData.signals.pull_requests)
-    $wiSignals = @($adoData.signals.work_items)
-    $commitSignals = @($adoData.signals.commits)
-
-    if ($prSignals.Count -gt 0) {
-        $mergeSteps += @{
-            label = "ADO Pull Requests ($($prSignals.Count))"
-            data  = ($prSignals | ConvertTo-Json -Depth 4 -Compress)
-        }
-    }
-    if ($wiSignals.Count -gt 0) {
-        $mergeSteps += @{
-            label = "ADO Work Items ($($wiSignals.Count))"
-            data  = ($wiSignals | ConvertTo-Json -Depth 4 -Compress)
-        }
-    }
-    if ($commitSignals.Count -gt 0) {
-        $mergeSteps += @{
-            label = "Git Commits ($($commitSignals.Count))"
-            data  = ($commitSignals | ConvertTo-Json -Depth 4 -Compress)
-        }
-    }
-}
-
-# Build merge batches from Work IQ signals (one per signal)
+# Clean Work IQ signals: strip ANSI codes, URLs, compress whitespace
+$cleanedSignals = @()
 if (Test-Path $wiqInput) {
     $wiqData = Get-Content $wiqInput -Raw | ConvertFrom-Json
     foreach ($signal in @($wiqData.signals)) {
-        $mergeSteps += @{
-            label = "Work IQ: $($signal.type) ($($signal.period))"
-            data  = ($signal | ConvertTo-Json -Depth 4 -Compress)
+        $cleaned = $signal.content -replace '\x1b\][^\x07]*\x07', '' `
+                                   -replace '\x1b\[[0-9;]*[a-zA-Z]', '' `
+                                   -replace '\x1b\\', '' `
+                                   -replace 'https?://[^\s\)]+', '' `
+                                   -replace '\s{2,}', ' '
+        $cleanedSignals += @{
+            type    = $signal.type
+            period  = $signal.period
+            date    = $signal.date
+            content = $cleaned.Trim()
         }
     }
 }
 
-if ($mergeSteps.Count -eq 0) {
-    Write-Host "  No signals to merge." -ForegroundColor DarkYellow
-    exit 0
+# Build the merge input file (cleaned, ready for Copilot MCP)
+$mergeInput = @{
+    collected_at = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ss")
+    ado_signals  = @{}
+    workiq_signals = @($cleanedSignals)
 }
 
-Write-Host "  Processing $($mergeSteps.Count) signal batches..." -ForegroundColor Gray
-
-# Helper function to send a merge chunk and get updated workstreams
-function Invoke-MergeChunk {
-    param($WorkiqPath, $CurrentWS, $SignalData, $Rules, $Owner, $Today)
-
-    $prompt = @"
-You are a work-tracking agent. Update the workstreams JSON below by merging in the new signals.
-
-Rules (summary):
-- Match signals to existing workstreams by topic, keywords, service names, or incident IDs
-- Create new workstreams for unmatched signals
-- Update last_updated and append to evidence for matches
-- Status: active (7 days), cooling (7-14 days), dormant (older)
-- Keep evidence snippets to 1-2 sentences
-- Never delete workstreams
-
-Current workstreams:
-$CurrentWS
-
-New signals to merge:
-$SignalData
-
-Return ONLY the updated JSON (with owner "$Owner" and last_synced "$Today"). No markdown fences, no explanation.
-"@
-
-    $response = & $WorkiqPath ask -q $prompt 2>$null
-    return $response
+if (Test-Path $adoInput) {
+    $adoData = Get-Content $adoInput -Raw | ConvertFrom-Json
+    $mergeInput.ado_signals = $adoData.signals
 }
 
-$stepNum = 0
-$failedSteps = @()
+$mergeInputFile = Join-Path $root "last-merge-input.json"
+$mergeInput | ConvertTo-Json -Depth 5 | Set-Content -Path $mergeInputFile -Encoding UTF8
 
-foreach ($step in $mergeSteps) {
-    $stepNum++
-    Write-Host "  [$stepNum/$($mergeSteps.Count)] $($step.label)..." -ForegroundColor Gray -NoNewline
+Write-Host "  Merge input saved to: last-merge-input.json" -ForegroundColor Green
+Write-Host "  Backup saved to: workstreams.backup.json" -ForegroundColor Green
 
-    try {
-        $response = Invoke-MergeChunk `
-            -WorkiqPath $workiqPath `
-            -CurrentWS $currentWorkstreams `
-            -SignalData $step.data `
-            -Rules $syncRules `
-            -Owner $config.user_email `
-            -Today $today
-
-        if (-not $response) {
-            Write-Host " no response" -ForegroundColor DarkYellow
-            $failedSteps += $step.label
-            continue
-        }
-
-        $responseText = ($response -join "`n").Trim()
-
-        # Extract JSON if wrapped in markdown fences
-        if ($responseText -match '(?s)```(?:json)?\s*(\{.+\})\s*```') {
-            $responseText = $Matches[1]
-        }
-
-        # Validate JSON
-        $parsed = $responseText | ConvertFrom-Json
-        if ($null -eq $parsed.workstreams) {
-            throw "Missing 'workstreams' field"
-        }
-
-        # Update current workstreams for next iteration
-        $currentWorkstreams = $responseText
-        Write-Host " ok ($(@($parsed.workstreams).Count) workstreams)" -ForegroundColor Green
-
-    } catch {
-        Write-Host " error: $($_.Exception.Message)" -ForegroundColor DarkYellow
-        $failedSteps += $step.label
-        # Save failed response for debugging
-        if ($responseText) {
-            $responseText | Set-Content -Path (Join-Path $root "last-merge-response-step$stepNum.txt") -Encoding UTF8
-        }
-        # Continue with unchanged workstreams for next step
-    }
-}
-
-# Write final result
-$currentWorkstreams | Set-Content -Path $wsFile -Encoding UTF8
-
-# Parse final state for summary
-try {
-    $final = $currentWorkstreams | ConvertFrom-Json
-    $wsCount = @($final.workstreams).Count
-    $activeCount = @($final.workstreams | Where-Object { $_.status -eq "active" }).Count
-    $coolingCount = @($final.workstreams | Where-Object { $_.status -eq "cooling" }).Count
-    $dormantCount = @($final.workstreams | Where-Object { $_.status -eq "dormant" }).Count
-} catch {
-    $wsCount = "?"
-    $activeCount = "?"
-    $coolingCount = "?"
-    $dormantCount = "?"
-}
+# --- Summary ---
+$adoCount = @($mergeInput.ado_signals.pull_requests).Count + @($mergeInput.ado_signals.work_items).Count + @($mergeInput.ado_signals.commits).Count
+$wiqCount = $cleanedSignals.Count
 
 Write-Host ""
-Write-Host "=== Sync Complete ===" -ForegroundColor Cyan
-Write-Host "  Total workstreams: $wsCount" -ForegroundColor White
-Write-Host "  Active: $activeCount  |  Cooling: $coolingCount  |  Dormant: $dormantCount" -ForegroundColor White
-Write-Host "  Backup: workstreams.backup.json" -ForegroundColor Gray
-
-if ($failedSteps.Count -gt 0) {
-    Write-Host "  Warning: $($failedSteps.Count) batch(es) failed to merge:" -ForegroundColor DarkYellow
-    foreach ($f in $failedSteps) {
-        Write-Host "    - $f" -ForegroundColor DarkYellow
-    }
-    Write-Host "  Re-run sync or merge manually in Copilot chat." -ForegroundColor DarkYellow
-}
+Write-Host "=== Collection Complete ===" -ForegroundColor Cyan
+Write-Host "  ADO signals: $adoCount" -ForegroundColor White
+Write-Host "  Work IQ signals: $wiqCount" -ForegroundColor White
+Write-Host ""
+Write-Host "To complete the merge, ask Copilot:" -ForegroundColor White
+Write-Host '  "Merge the signals from last-merge-input.json into workstreams.json using the sync prompt in prompts/sync.md"' -ForegroundColor Yellow

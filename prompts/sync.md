@@ -21,6 +21,9 @@ You will receive:
 - Never delete workstreams -- only change status
 - Keep evidence snippets short (1-2 sentences max)
 - Preserve existing evidence entries unchanged
+- Do not add an evidence entry if one already exists with the same source and date
+- If a workstream has more than 15 evidence entries, keep only the 15 most recent and note that older entries were archived
+- If a workstream has been `dormant` for more than 30 days, move it to a `## Archived` section at the bottom of the workstreams array (set status to `archived`)
 
 ## Workstream Schema
 

@@ -8,6 +8,19 @@
         "--account",
         "YOUR_EMAIL@microsoft.com"
       ]
+    },
+    "largefile": {
+      "command": "uvx",
+      "args": ["--from", "largefile", "largefile-mcp"]
+    },
+    "ado": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@azure-devops/mcp", "msazure"]
+    },
+    "diffchunk": {
+      "command": "uvx",
+      "args": ["--from", "diffchunk", "diffchunk-mcp"]
     }
   }
 }

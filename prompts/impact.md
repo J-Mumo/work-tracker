@@ -103,7 +103,7 @@ If a workstream has `impact: null` in workstreams.json:
 - **Do not skip it** -- instead, list it under "Impact Needed" with:
   - A draft impact statement based on the evidence (best guess)
   - A specific question to the user to confirm or refine it
-  - Example: "ws-005 (Tenant rotation): I drafted 'Automated tenant lifecycle, reducing manual setup from X hours to Y minutes.' Can you confirm the time savings?"
+  - Example: "Tenant rotation: I drafted 'Automated tenant lifecycle, reducing manual setup from X hours to Y minutes.' Can you confirm the time savings?"
 - The user's answer should be used to populate the impact field
 
 If a workstream has impact already populated, review it for **strengthening opportunities**:
@@ -122,11 +122,9 @@ Period: [date range]
 ### [Priority area 1]
 - **[Workstream title]** (direct impact)
   Delivered [what]. Result: [metric change] for [who].
-  Evidence: [PR, ICM, meeting reference]
 
 - **[Workstream title]** (leveraged impact)
   Delivered [what]. Result: [who was unblocked/accelerated] by [how].
-  Evidence: [reference]
 
 ## How I Worked
 
@@ -153,7 +151,7 @@ For these workstreams, the impact statement exists but could be more compelling 
 ## Impact Needed (please confirm or refine)
 For each workstream below, I've drafted an impact statement but need your input:
 
-- **[Workstream title]** (impact: null)
+- **[Workstream title]**
   Draft: "[best-guess impact statement]"
   Question: "[specific question to refine the metric]"
 

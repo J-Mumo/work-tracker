@@ -1,13 +1,9 @@
 {
   "servers": {
     "workiq": {
-      "command": "C:\\.tools\\.npm-global\\workiq.cmd",
-      "type": "stdio",
-      "args": [
-        "mcp",
-        "--account",
-        "YOUR_EMAIL@microsoft.com"
-      ]
+      "command": "npx",
+      "args": ["-y", "@microsoft/workiq@latest", "mcp"],
+      "tools": ["*"]
     },
     "largefile": {
       "command": "uvx",

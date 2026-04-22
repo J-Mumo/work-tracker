@@ -298,22 +298,25 @@ if (-not (Test-Path $wsFile)) {
 
 # --- Update mcp.json ---
 $mcpFile = Join-Path $PSScriptRoot ".vscode" "mcp.json"
-if ($workiqPath) {
-    $mcpDir = Join-Path $PSScriptRoot ".vscode"
-    if (-not (Test-Path $mcpDir)) {
-        New-Item -ItemType Directory -Path $mcpDir -Force | Out-Null
-    }
+$mcpDir = Join-Path $PSScriptRoot ".vscode"
+if (-not (Test-Path $mcpDir)) {
+    New-Item -ItemType Directory -Path $mcpDir -Force | Out-Null
+}
+# Only write mcp.json if it doesn't already exist (don't overwrite user customizations)
+if (-not (Test-Path $mcpFile)) {
     $mcpConfig = @{
         servers = @{
             workiq = @{
-                type    = "stdio"
-                command = $workiqPath
-                args    = @("mcp", "--account", $userEmail)
+                command = "npx"
+                args    = @("-y", "@microsoft/workiq@latest", "mcp")
+                tools   = @("*")
             }
         }
     }
     $mcpConfig | ConvertTo-Json -Depth 4 | Set-Content -Path $mcpFile -Encoding UTF8
-    Write-Host "  Updated .vscode/mcp.json with Work IQ MCP server" -ForegroundColor Green
+    Write-Host "  Created .vscode/mcp.json with Work IQ MCP server" -ForegroundColor Green
+} else {
+    Write-Host "  .vscode/mcp.json already exists -- keeping it." -ForegroundColor Yellow
 }
 
 # --- Accept EULA if needed ---

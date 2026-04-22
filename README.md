@@ -10,23 +10,25 @@ standups, and livesite/ops activity -- not just in PRs and tickets.
 ## Prerequisites
 
 - **Microsoft 365 Copilot license** (required for Work IQ)
-- **Work IQ CLI**: `npm install -g @microsoft/workiq`
 - **Azure CLI** with DevOps extension: `az extension add --name azure-devops`
 - **VS Code** with GitHub Copilot extension
 - **Git** (for commit history)
-- **Node.js 18+** (for Work IQ CLI)
+- **Node.js 18+** (for Work IQ)
 
 ## Quick Start
 
 ```powershell
 # 1. Clone or copy this folder
-# 2. Run setup (interactive -- detects your identity and repo)
+# 2. Verify Work IQ works (auto-installs via npx)
+npx -y @microsoft/workiq mcp
+
+# 3. Run setup (interactive -- detects your identity and repo)
 .\setup.ps1
 
-# 3. Open in VS Code
+# 4. Open in VS Code
 code .
 
-# 4. Start Work IQ MCP server
+# 5. Start Work IQ MCP server
 #    In Copilot chat, click the tools icon and start "workiq"
 
 # 5. Collect ADO signals

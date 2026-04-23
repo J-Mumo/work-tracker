@@ -12,7 +12,7 @@
     "ado": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@azure-devops/mcp", "msazure"]
+      "args": ["-y", "@azure-devops/mcp", "identitydivision"]
     },
     "diffchunk": {
       "command": "uvx",

@@ -17,24 +17,49 @@ standups, and livesite/ops activity -- not just in PRs and tickets.
 
 ## Quick Start
 
+1. Clone or copy this folder and open it in VS Code
+2. Run setup (interactive — detects your identity, repos, and ADO orgs):
+   ```powershell
+   .\setup.ps1
+   ```
+3. In Copilot chat, click the **tools icon** (🔧) and start the **workiq** MCP server
+4. Ask Copilot: **"Sync my work"** — it will collect ADO signals and merge them
+5. Ask Copilot: **"What am I updating on?"**
+
+That's it. Everything else happens through Copilot chat.
+
+## Using Copilot (recommended)
+
+All commands below are typed in **VS Code Copilot chat** (Ctrl+Shift+I or the Copilot sidebar).
+
+### Setup
+If `config.json` doesn't exist yet, Copilot will guide you through setup:
+```
+"Set up work tracker"
+```
+Or run `.\setup.ps1` in the terminal for the interactive wizard.
+
+### Sync your work
+Copilot can run the full sync (collect ADO + Work IQ signals, then merge):
+```
+"Sync my work"
+```
+This collects PRs, work items, and commits from ADO, meeting/email/chat context
+from Work IQ, and merges everything into `workstreams.json`.
+
+You can also specify a time range:
+```
+"Sync my work for the last 14 days"
+```
+
+### Using terminal scripts directly
+If you prefer running scripts manually:
 ```powershell
-# 1. Clone or copy this folder
-# 2. Verify Work IQ works (auto-installs via npx)
-npx -y @microsoft/workiq mcp
+# Collect signals and prepare merge input
+.\sync.ps1 -DaysBack 7
 
-# 3. Run setup (interactive -- detects your identity and repo)
-.\setup.ps1
-
-# 4. Open in VS Code
-code .
-
-# 5. Start Work IQ MCP server
-#    In Copilot chat, click the tools icon and start "workiq"
-
-# 5. Collect ADO signals
-.\scripts\sync-ado.ps1
-
-# 6. Ask Copilot: "What am I updating on?"
+# Then ask Copilot to complete the merge:
+# "Merge the signals from last-merge-input.json into workstreams.json"
 ```
 
 ## How It Works
@@ -85,17 +110,19 @@ You ask: "What am I updating on?"
 
 ## Usage
 
+All usage is through **Copilot chat**. Just type what you need:
+
 ### Before standup
 ```
 "What am I updating on?"
+"What should I update on in standup?"
 ```
 
-### After a meeting or end of day
-```powershell
-.\scripts\sync-ado.ps1
-# Then in Copilot chat:
-# "Sync my work updates using Work IQ and the ADO signals in last-sync-input.json"
+### Sync after a meeting or end of day
 ```
+"Sync my work"
+```
+Copilot collects ADO signals and Work IQ context, then merges them into your workstreams automatically.
 
 ### Weekly status
 ```

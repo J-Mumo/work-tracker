@@ -14,6 +14,16 @@
       "command": "npx",
       "args": ["-y", "@azure-devops/mcp", "identitydivision"]
     },
+    "ado-msazure": {
+      "type": "stdio",
+      "command": "agency",
+      "args": ["mcp", "ado", "--organization", "msazure", "--toolsets", "core,work,work-items,search,repositories,wiki,pipelines"]
+    },
+    "ado-identitydivision": {
+      "type": "stdio",
+      "command": "agency",
+      "args": ["mcp", "ado", "--organization", "identitydivision", "--toolsets", "core,work,work-items,search,wiki"]
+    },
     "diffchunk": {
       "command": "uvx",
       "args": ["--from", "diffchunk", "diffchunk-mcp"]

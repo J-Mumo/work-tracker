@@ -22,6 +22,11 @@ standups, and livesite/ops activity -- not just in PRs and tickets.
    ```powershell
    .\setup.ps1
    ```
+   Alternatively, you can ask Copilot to do it for you:
+   ```
+   "Set up work tracker"
+   ```
+   > **Note:** Setup takes approximately **15 minutes** to complete (it scans repos, discovers ADO orgs, and runs an initial sync). Be patient and let it finish — do not cancel early.
 3. In Copilot chat, click the **tools icon** (🔧) and start the **workiq** MCP server
 4. Ask Copilot: **"Sync my work"** — it will collect ADO signals and merge them
 5. Ask Copilot: **"What am I updating on?"**
@@ -50,6 +55,32 @@ from Work IQ, and merges everything into `workstreams.json`.
 You can also specify a time range:
 ```
 "Sync my work for the last 14 days"
+```
+
+### Prepare for Connects / Draft Impact Summary
+Connect season? Use these prompts to generate impact statements from your tracked workstreams:
+```
+"Draft my Connect impact summary"
+"Draft my Connect impact summary for this half"
+"What impact did I have this quarter?"
+"Prepare for Connects"
+```
+The agent will:
+1. Review all workstreams active during the period
+2. Query linked documents (PIRs, design docs) and auto-discover related SharePoint/OneDrive files via Work IQ
+3. Extract real metrics (ICM counts, customer impact, severity, timelines)
+4. Classify each workstream's impact (direct, leveraged, or organizational)
+5. Generate Connect-ready statements in the format: **"Delivered [what], which resulted in [outcome] for [who]."**
+
+You can also update impact for a specific workstream:
+```
+"Update the impact for config merge — the PR reduced ICMs by 50%"
+"Add impact: automated tenant rotation cut setup from 60 hours to 30 minutes"
+```
+Or scope the summary to a time range:
+```
+"What's my impact since January?"
+"Draft impact summary for FY26 H2"
 ```
 
 ### Using terminal scripts directly
@@ -128,13 +159,6 @@ Copilot collects ADO signals and Work IQ context, then merges them into your wor
 ```
 "Draft a weekly status update based on my workstreams"
 ```
-
-### Prepare for Connects
-```
-"Draft my Connect impact summary"
-```
-The agent will query linked documents (PIRs, design docs) and auto-discover related
-SharePoint/OneDrive files via Work IQ to extract real metrics for impact statements.
 
 ### Link a document to a workstream
 ```

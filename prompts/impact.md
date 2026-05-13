@@ -21,12 +21,12 @@ Impact types:
 - **Leveraged**: Your work multiplied others' effectiveness (unblocked teammates, created reusable patterns, improved processes)
 - **Organizational**: You influenced team/org direction, culture, or strategy
 
-### Lens 2: "How you work" (behaviors)
-Capture evidence of:
-- **Collaboration**: Cross-team work, PR reviews given, joint debugging sessions, cross-org coordination
-- **Growth mindset**: New skills learned, technologies adopted, areas you stretched into
-- **Multiplier effect**: Knowledge sharing sessions, documentation, tools/automation that helped the team
-- **Inclusion and trust**: Mentoring, onboarding help, creating safe spaces for questions
+### Lens 2: "How you work" (Microsoft Culture Behaviors)
+Capture evidence mapped to Microsoft's four culture attributes:
+- **Growth Mindset**: New skills learned, technologies adopted, pivoting from failed approaches, experimenting with emerging tools (e.g., AI/Copilot), areas you stretched into
+- **Customer Obsessed**: Prioritizing customer impact, ensuring quality/security before shipping, preventing failures at scale, unblocking customer scenarios
+- **One Microsoft**: Cross-team collaboration, aligning teams on shared goals, sharing reusable patterns, PR reviews given, joint debugging sessions, multiplying value across orgs
+- **Accountability**: Owning work end-to-end (PR to validation), taking ownership of unassigned items, meeting deadlines, delivering measurable results, eliminating toil
 
 ## What to Do
 
@@ -91,6 +91,7 @@ For each workstream, look for:
 Format: **"Delivered [what], which resulted in [outcome] for [who]."**
 
 For "how" items, format: **"Demonstrated [behavior] by [action], which [effect]."**
+Use the four Microsoft culture attributes: Growth Mindset, Customer Obsessed, One Microsoft, Accountability.
 
 Keep it:
 - Specific (not "improved reliability" but "reduced config-related upgrade failures from ~3/month to 0")
@@ -126,16 +127,17 @@ Period: [date range]
 - **[Workstream title]** (leveraged impact)
   Delivered [what]. Result: [who was unblocked/accelerated] by [how].
 
-## How I Worked
+## How Impact Was Delivered
 
-### Collaboration
-- [Cross-team work, reviews, joint problem-solving]
+Demonstrated: Growth Mindset, Customer Obsessed, One Microsoft, Accountability
 
-### Growth & Learning
-- [New technologies adopted, skills developed]
+**Growth Mindset**: [New technologies adopted, pivots from failed approaches, AI tool adoption]
 
-### Multiplier Effect
-- [Knowledge sharing, documentation, tools that helped the team]
+**Customer Obsessed**: [Customer-facing impact, quality validation, security-first shipping]
+
+**One Microsoft**: [Cross-team sessions, unblocking other teams, sharing patterns]
+
+**Accountability**: [End-to-end ownership, measurable outcomes, deadline adherence]
 
 ## Leveraged & Organizational Impact
 - [Items where your work helped others or shaped direction]
@@ -174,5 +176,6 @@ For each workstream below, I've drafted an impact statement but need your input:
 - Workstreams with `impact: null` MUST appear in the "Impact Needed" section with a draft and question.
 - Workstreams with existing impact statements should NOT be overwritten, but SHOULD be reviewed for strengthening opportunities (missing metrics, customer counts, ICM numbers).
 - Existing impact that mentions customer-facing outcomes without numbers MUST appear in "Impact Can Be Strengthened" with a specific data request.
-- Always include a "How I Worked" section -- this is half of Microsoft's evaluation framework.
+- Always include a "How Impact Was Delivered" section mapped to Microsoft's four culture attributes (Growth Mindset, Customer Obsessed, One Microsoft, Accountability) -- this is half of Microsoft's evaluation framework.
+- The total impact summary (all sections combined) MUST NOT exceed 6,000 characters. If the draft exceeds this limit, tighten language, remove redundancy between sections, and consolidate smaller workstreams before cutting content. Prioritize preserving measurable outcomes and specific evidence over descriptive prose.
 - If Work IQ MCP is available, proactively query for ICM counts, customer escalations, and team feedback to strengthen metrics.
